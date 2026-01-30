@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Store - متجر الخدمات الرقمية</title>
+    <style>
+        :root {
+            --primary-color: #00d2ff;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+            border: 1px solid #334155;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border-color: var(--primary-color);
+        }
+
+        .card img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card h3 { margin: 10px 0; color: var(--primary-color); }
+        .card p { font-size: 0.9em; color: #94a3b8; height: 40px; }
+        .card .price { font-size: 1.5em; font-weight: bold; margin: 15px 0; color: #10b981; }
+
+        .btn-buy {
+            background-color: var(--primary-color);
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-buy:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Market Store 🛒</h1>
+    <p>أفضل الخدمات الرقمية والاشتراكات في مكان واحد</p>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h3>Free Fire - 100 Diamonds</h3>
+        <p>شحن فوري عبر الـ ID الرسمي</p>
+        <div class="price">300 دج</div>
+        <a href="https://wa.me/213777392155?text=أريد_شحن_100_جوهرة_فري_فاير" class="btn-buy">اطلب الآن</a>
+    </div>
+
+    <div class="card">
+        <h3>Netflix Premium</h3>
+        <p>اشتراك شهر كامل - جودة 4K Ultra HD</p>
+        <div class="price">3100 دج</div>
+        <a href="https://wa.me/213777392155?text=أريد_طلب_نيتفليكس_بريميوم" class="btn-buy">اطلب الآن</a>
+    </div>
+
+    <div class="card">
+        <h3>eFootball - 1040 Coins</h3>
+        <p>شحن كوينز إي فوتبول 26 (الهاتف)</p>
+        <div class="price">1500 دج</div>
+        <a href="https://wa.me/213777392155?text=أريد_كوينز_إي_فوتبول" class="btn-buy">اطلب الآن</a>
+    </div>
+
+    <div class="card">
+        <h3>Monthly Membership FF</h3>
+        <p>العضوية الشهرية - أفضل قيمة للجواهر</p>
+        <div class="price">2850 دج</div>
+        <a href="https://wa.me/213777392155?text=أريد_العضوية_الشهرية_فري_فاير" class="btn-buy">اطلب الآن</a>
+    </div>
+</div>
+
+</body>
+</html>
