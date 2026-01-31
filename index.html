@@ -110,6 +110,117 @@
         <a href="https://wa.me/213777392155?text=أريد_العضوية_الشهرية_فري_فاير" class="btn-buy">اطلب الآن</a>
     </div>
 </div>
+<div id="orderModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:1000; padding:20px; box-sizing:border-box;">
+    <div style="background:#151921; width:100%; max-width:400px; margin:50px auto; padding:25px; border-radius:20px; border:1px solid #00d4ff; text-align:right;">
+        <h3 id="modalTitle" style="color:#00d4ff; margin-top:0;">تأكيد الطلب</h3>
+        <p id="modalPrice" style="color:#00d4ff; font-weight:bold; font-size:1.2rem;"></p>
+        
+        <div id="inputContainer">
+            <label style="display:block; margin-bottom:5px; font-size:14px;">بيانات الحساب (جيميل + باسورد / ID):</label>
+            <textarea id="accountDetails" rows="3" style="width:100%; padding:10px; border-radius:8px; background:#0b0e14; color:white; border:1px solid #2d343f; resize:none;" placeholder="مثال: shuaib@gmail.com | Pass: 123456"></textarea>
+        </div>
 
+        <div style="margin-top:15px;">
+            <label style="display:block; margin-bottom:5px; font-size:14px;">صورة وصل الدفع (CCP/BaridiMob):</label>
+            <input type="file" id="receiptFile" accept="image/*" style="width:100%; font-size:13px; color:#888;">
+        </div>
+        
+        <button class="btn-order" id="confirmBtn" onclick="submitFinalOrder()" style="margin-top:20px;">إرسال الطلب والوصل ✅</button>
+        <button onclick="closeModal()" style="background:none; color:#ff4757; border:none; margin-top:15px; cursor:pointer; width:100%; font-weight:bold;">إلغاء الطلب</button>
+    </div>
+</div>
+
+<script type="module">
+    // ... (إعدادات Firebase الخاصة بك والمكتبات) ...
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const storage = getStorage(app);
+    let currentItem = "";
+    let currentPrice = "";
+
+    window.processOrder = (selectId, category) => {
+        const val = document.getElementById(selectId).value;
+        [currentItem, currentPrice] = val.split(" - ");
+        
+        document.getElementById('modalTitle').innerText = category + " - " + currentItem;
+        document.getElementById('modalPrice').innerText = currentPrice;
+        
+        // تغيير النص المساعد (Placeholder) حسب المنتج
+        const detailInput = document.getElementById('accountDetails');
+        if (category.includes("eFootball") || category.includes("Gemini") || category.includes("Netflix")) {
+            detailInput.placeholder = "أدخل الجيميل وكلمة السر (Konami ID / Account)";
+        } else {
+            detailInput.placeholder = "أدخل الـ ID الخاص باللاعب";
+        }
+        
+        document.getElementById('orderModal').style.display = 'block';
+    };
+
+    window.closeModal = () => {
+        document.getElementById('orderModal').style.display = 'none';
+        document.getElementById('receiptFile').value = ""; // تفريغ الملف
+    };
+
+    window.submitFinalOrder = async () => {
+        const details = document.getElementById('accountDetails').value;
+        const file = document.getElementById('receiptFile').files[0];
+        const user = auth.currentUser;
+
+        if (!details || !file) return alert("يرجى إدخال بيانات الحساب ورفع صورة الوصل!");
+
+        try {
+            document.getElementById('confirmBtn').innerText = "جاري رفع الوصل والإرسال...";
+            document.getElementById('confirmBtn').disabled = true;
+            
+            // 1. رفع صورة الوصل إلى Firebase Storage
+            const storageRef = ref(storage, 'receipts/' + Date.now() + "_" + user.uid);
+            const snapshot = await uploadBytes(storageRef, file);
+            const receiptURL = await getDownloadURL(snapshot.ref);
+
+            // 2. تسجيل الطلب المتكامل في Firestore
+            await addDoc(collection(db, "orders"), {
+                customerName: user.displayName,
+                customerEmail: user.email,
+                product: currentItem,
+                price: currentPrice,
+                accountData: details, // (الجيميل والباسورد أو الـ ID)
+                receiptImg: receiptURL, // رابط الصورة المرفوعة
+                status: "قيد المراجعة",
+                time: serverTimestamp()
+            });
+
+            alert("✅ تم إرسال طلبك بنجاح! سيتم التنفيذ فور التأكد من الوصل.");
+            closeModal();
+            document.getElementById('confirmBtn').innerText = "إرسال الطلب والوصل ✅";
+            document.getElementById('confirmBtn').disabled = false;
+        } catch (e) {
+            console.error(e);
+            alert("خطأ: تأكد من تفعيل Storage في Firebase ووضع Rules على True");
+            document.getElementById('confirmBtn').disabled = false;
+        }
+    };
+        </script>
+    // أضف هذا الكود في ملف index.html داخل السكريبت لمراقبة حالة الطلب للزبون
+onSnapshot(collection(db, "orders"), (snapshot) => {
+    snapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.customerEmail === auth.currentUser.email && data.status === "تم التسليم") {
+            alert("🎉 بشرى سارة! تم تسليم طلبك لـ " + data.product);
+        }
+    });
+});
+// إضافة تنبيه صوتي عند وصول طلب جديد
+const audio = new Audio('https://www.soundjay.com/buttons/sounds/button-3.mp3');
+
+onSnapshot(collection(db, "orders"), (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+            audio.play(); // تشغيل الجرس
+            console.log("طلب جديد واصل!");
+        }
+    });
+    // ... بقية كود عرض الطلبات ...
+});
+    
 </body>
 </html>
