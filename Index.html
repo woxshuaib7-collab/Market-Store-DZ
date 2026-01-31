@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Market Store</title>
+    <style>
+        :root { --main: #00d2ff; --bg: #0f172a; --card: #1e293b; --text: #ffffff; }
+        body { font-family: sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 0; }
+        
+        /* إخفاء تام لكل شيء في البداية */
+        .page { display: none; padding: 20px; box-sizing: border-box; }
+        .active { display: block !important; }
+
+        .header { background: var(--card); padding: 15px; border-bottom: 2px solid var(--main); text-align: center; font-weight: bold; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .card { background: var(--card); border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #334155; }
+        
+        input { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .btn { background: var(--main); color: #000; width: 100%; padding: 12px; border-radius: 25px; border: none; font-weight: bold; margin-top: 15px; cursor: pointer; }
+        
+        /* تحسين شكل خانة الوصل */
+        .upload-section { background: #1e293b; padding: 10px; border-radius: 10px; margin-top: 15px; border: 1px dashed var(--main); text-align: right; }
+        footer { padding: 20px; text-align: center; font-size: 0.7rem; color: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div id="loginP" class="page active">
+    <div style="text-align: center; padding-top: 50px;">
+        <h1 style="color: var(--main);">Market Store</h1>
+        <p>سجل اسمك للدخول</p>
+        <input type="text" id="uName" placeholder="الاسم الكامل">
+        <button type="button" class="btn" onclick="goHome()">دخول</button>
+    </div>
+</div>
+
+<div id="homeP" class="page">
+    <div class="header" id="userWelcome">المتجر</div>
+    <div style="background: var(--main); color: #000; padding: 8px; border-radius: 8px; margin: 10px 0; text-align: center; font-size: 0.8rem; font-weight: bold;">
+        🔥 شحن فوري وأسعار خيالية 🔥
+    </div>
+    <div class="grid" id="itemsCont"></div>
+    <footer>forgame202601@gmail.com | +213777392155</footer>
+</div>
+
+<div id="prodP" class="page">
+    <div onclick="showPage('homeP')" style="color: var(--main); cursor: pointer; font-weight: bold;">← عودة</div>
+    <div style="text-align: center; margin-top: 20px;">
+        <h2 id="pTitle"></h2>
+        <h3 id="pPrice" style="color: #10b981;"></h3>
+        
+        <input type="text" id="pData" placeholder="">
+        
+        <div class="upload-section">
+            <label style="font-size: 0.8rem; display: block; margin-bottom: 5px;">📸 ارفع وصل بريدي موب:</label>
+            <input type="file" id="pReceipt" style="font-size: 0.8rem; border: none; background: none;">
+        </div>
+
+        <button type="button" class="btn" onclick="finishOrder()">إرسال الطلب (واتساب)</button>
+    </div>
+</div>
+
+<script type="module">
+  // استيراد المكتبات اللازمة
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+  // إعداداتك الخاصة التي أرسلتها للتو
+  const firebaseConfig = {
+    apiKey: "AIzaSyBEAp4wDhJ4UDQ-t6MytKZlXUEZQ_MAR_Y",
+    authDomain: "market-store-dz-7edf8.firebaseapp.com",
+    projectId: "market-store-dz-7edf8",
+    storageBucket: "market-store-dz-7edf8.firebasestorage.app",
+    messagingSenderId: "218011933887",
+    appId: "1:218011933887:web:2116868fde642139acfa0a",
+    measurementId: "G-37H0V3KYKB"
+  };
+
+  // تهيئة النظام
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const storage = getStorage(app);
+
+  // جعل دالة الإرسال تعمل مع الأزرار
+  window.finishOrder = async function() {
+      const file = document.getElementById('pReceipt').files[0];
+      if(!file) return alert("يرجى رفع صورة الوصل أولاً!");
+
+      try {
+          // رفع الصورة إلى سحابة التخزين
+          const storageRef = ref(storage, 'receipts/' + Date.now() + "_" + file.name);
+          await uploadBytes(storageRef, file);
+          const photoURL = await getDownloadURL(storageRef);
+
+          // حفظ بيانات الطلب (ID اللاعب أو الإيميل) في قاعدة البيانات
+          await addDoc(collection(db, "orders"), {
+              customer: user,
+              product: current.t,
+              details: document.getElementById('pData').value,
+              receipt: photoURL,
+              date: new Date()
+          });
+
+          // إرسال الإشعار للواتساب
+          window.location.href = `https://wa.me/213777392155?text=طلب جديد من ${user}: ${current.t}. الوصل: ${photoURL}`;
+      } catch (e) {
+          alert("حدث خطأ في الاتصال، تأكد من تفعيل Mode Test في Firebase");
+      }
+  };
+</script>
+
+    }
+</script>
+</body>
+</html>
